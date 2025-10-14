@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 
-// Beneficios por nivel
-const beneficios = {
+// ✅ Beneficios por nivel (tipado correcto)
+const beneficios: Record<number, string[]> = {
   1: [
     "Repetir tu sorteo de reto",
     "Cambiar de bombo una vez",
@@ -32,7 +32,8 @@ const beneficios = {
   ],
 };
 
-const precios = { 1: 5, 2: 10, 3: 15 };
+// ✅ Precios tipados correctamente
+const precios: Record<number, number> = { 1: 5, 2: 10, 3: 15 };
 
 export default function TiendaMUFA() {
   const { jugadores, setJugadores } = useMufaStore();
@@ -182,7 +183,7 @@ export default function TiendaMUFA() {
               {precios[nivel]} Mufa Coins
             </p>
             <ul className="space-y-3">
-              {beneficios[nivel].map((b, idx) => (
+              {beneficios[nivel].map((b: string, idx: number) => (
                 <li
                   key={idx}
                   className="flex justify-between items-center bg-gray-800 rounded-lg px-4 py-2"
