@@ -56,13 +56,11 @@ export default function ModalPartidos({ visible, onClose }: Props) {
 
   const cerrarConRetos = () => {
     if (modo === "cpu" && jugadorActivo) {
-      const dificultadAleatoria = ["fácil", "medio", "difícil"][
-        Math.floor(Math.random() * 3)
-      ] as "fácil" | "medio" | "difícil";
-      const descripcion =
-        RETOS_FC[dificultadAleatoria][
-          Math.floor(Math.random() * RETOS_FC[dificultadAleatoria].length)
-        ];
+      const dificultadAleatoria = ["facil", "medio", "dificil"][Math.floor(Math.random() * 3)] as "facil" | "medio" | "dificil";
+      const descripcion = RETOS_FC[dificultadAleatoria][
+        Math.floor(Math.random() * RETOS_FC[dificultadAleatoria].length)
+      ];
+
       agregarReto({
         id: uuidv4(),
         jugador: jugadorActivo,
@@ -71,7 +69,7 @@ export default function ModalPartidos({ visible, onClose }: Props) {
         cumplido: false,
         fallido: false,
         monedas:
-          dificultadAleatoria === "fácil"
+          dificultadAleatoria === "facil"
             ? 1
             : dificultadAleatoria === "medio"
             ? 2
@@ -80,12 +78,9 @@ export default function ModalPartidos({ visible, onClose }: Props) {
     }
 
     if (modo === "jugador" && jugadorActivo && contrincante) {
-      const dif1 = ["fácil", "medio", "difícil"][
-        Math.floor(Math.random() * 3)
-      ] as "fácil" | "medio" | "difícil";
-      const dif2 = ["fácil", "medio", "difícil"][
-        Math.floor(Math.random() * 3)
-      ] as "fácil" | "medio" | "difícil";
+      const dif1 = ["facil", "medio", "dificil"][Math.floor(Math.random() * 3)] as "facil" | "medio" | "dificil";
+      const dif2 = ["facil", "medio", "dificil"][Math.floor(Math.random() * 3)] as "facil" | "medio" | "dificil";
+
       const reto1 =
         RETOS_FC[dif1][Math.floor(Math.random() * RETOS_FC[dif1].length)];
       const reto2 =
@@ -98,7 +93,7 @@ export default function ModalPartidos({ visible, onClose }: Props) {
         dificultad: dif1,
         cumplido: false,
         fallido: false,
-        monedas: dif1 === "fácil" ? 1 : dif1 === "medio" ? 2 : 3,
+        monedas: dif1 === "facil" ? 1 : dif1 === "medio" ? 2 : 3,
       });
 
       agregarReto({
@@ -108,7 +103,7 @@ export default function ModalPartidos({ visible, onClose }: Props) {
         dificultad: dif2,
         cumplido: false,
         fallido: false,
-        monedas: dif2 === "fácil" ? 1 : dif2 === "medio" ? 2 : 3,
+        monedas: dif2 === "facil" ? 1 : dif2 === "medio" ? 2 : 3,
       });
     }
 

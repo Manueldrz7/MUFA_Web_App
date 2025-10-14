@@ -27,7 +27,7 @@ export interface Reto {
   id: string;
   jugador: string;
   descripcion: string;
-  dificultad: "fácil" | "medio" | "difícil";
+  dificultad: "facil" | "medio" | "dificil";
   cumplido: boolean;
   fallido?: boolean;
   monedas: number; // 1 / 2 / 3
