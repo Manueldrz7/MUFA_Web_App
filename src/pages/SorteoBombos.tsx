@@ -105,21 +105,27 @@ export default function SorteoBombos() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-blue-950 text-white p-6 flex flex-col items-center">
-      <h1 className="text-4xl font-bold text-blue-400 mb-6">🏆 Sorteo MUFA</h1>
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-blue-950 text-white px-4 sm:px-6 py-6 flex flex-col items-center">
+      <h1 className="text-3xl sm:text-4xl font-bold text-blue-400 mb-6 text-center">
+        🏆 Sorteo MUFA
+      </h1>
 
-      {mensaje && <p className="mb-4 text-yellow-400">{mensaje}</p>}
+      {mensaje && <p className="mb-4 text-yellow-400 text-center px-2">{mensaje}</p>}
 
       {/* Bombos visibles hasta que finalice el sorteo */}
       {!sorteoFinalizado && (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10 w-full max-w-6xl">
             {Object.keys(bombos).map((bombo) => (
               <div key={bombo} className="bg-gray-800 rounded-xl p-4 flex flex-col items-center shadow-lg">
-                <h2 className="text-2xl font-bold mb-3">Bombo {bombo}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold mb-3">Bombo {bombo}</h2>
                 <div className="grid grid-cols-3 gap-2">
                   {bombos[bombo].map((eq) => (
-                    <motion.div key={eq} whileHover={{ scale: 1.1 }} className="bg-blue-600 w-10 h-10 flex items-center justify-center rounded-full text-sm shadow-md">
+                    <motion.div
+                      key={eq}
+                      whileHover={{ scale: 1.1 }}
+                      className="bg-blue-600 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full text-sm shadow-md"
+                    >
                       ⚽
                     </motion.div>
                   ))}
@@ -128,10 +134,12 @@ export default function SorteoBombos() {
             ))}
           </div>
 
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-xl mb-2 text-gray-300">
+          <div className="flex flex-col items-center mb-6 text-center">
+            <h2 className="text-lg sm:text-xl mb-2 text-gray-300">
               Jugador actual:{" "}
-              <span className="text-blue-400 font-bold">{jugadores[activo]?.nombre || "-"}</span>
+              <span className="text-blue-400 font-bold">
+                {jugadores[activo]?.nombre || "-"}
+              </span>
             </h2>
             <button
               onClick={sortear}
@@ -144,9 +152,11 @@ export default function SorteoBombos() {
       )}
 
       {/* 📋 Pizarra de Equipos */}
-      <div className="w-full max-w-3xl bg-gray-800 rounded-lg p-4 mt-6">
-        <h3 className="text-2xl mb-4 text-center font-semibold">📋 Equipos Sorteados</h3>
-        <table className="w-full text-center border-collapse">
+      <div className="w-full max-w-3xl bg-gray-800 rounded-lg p-4 mt-6 overflow-x-auto">
+        <h3 className="text-xl sm:text-2xl mb-4 text-center font-semibold">
+          📋 Equipos Sorteados
+        </h3>
+        <table className="w-full text-center border-collapse min-w-[500px]">
           <thead>
             <tr>
               <th className="border-b border-gray-600 py-2">Jugador</th>
@@ -172,7 +182,7 @@ export default function SorteoBombos() {
                             ),
                           });
                         }}
-                        className="bg-gray-700 text-white rounded-md px-2 py-1 w-24 text-center border border-gray-600 focus:border-blue-400 focus:outline-none"
+                        className="bg-gray-700 text-white rounded-md px-2 py-1 w-20 sm:w-24 text-center border border-gray-600 focus:border-blue-400 focus:outline-none"
                       />
                     ))}
                   </div>
@@ -185,9 +195,11 @@ export default function SorteoBombos() {
 
       {/* 🎯 Grid de Retos (solo si hay) */}
       {retos.length > 0 && (
-        <div className="w-full max-w-3xl bg-gray-800 rounded-lg p-4 mt-10">
-          <h3 className="text-2xl mb-4 text-center font-semibold">🎯 Retos Actuales</h3>
-          <table className="w-full text-center border-collapse">
+        <div className="w-full max-w-3xl bg-gray-800 rounded-lg p-4 mt-10 overflow-x-auto">
+          <h3 className="text-xl sm:text-2xl mb-4 text-center font-semibold">
+            🎯 Retos Actuales
+          </h3>
+          <table className="w-full text-center border-collapse min-w-[600px]">
             <thead>
               <tr>
                 <th className="border-b border-gray-600 py-2">Jugador</th>
@@ -209,16 +221,16 @@ export default function SorteoBombos() {
                     ) : r.fallido ? (
                       <span className="text-red-400 font-semibold">No cumplido</span>
                     ) : (
-                      <div className="flex justify-center gap-2">
+                      <div className="flex flex-wrap justify-center gap-2">
                         <button
                           onClick={() => actualizarRetoEstado(r.id, "cumplido")}
-                          className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded"
+                          className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm sm:text-base"
                         >
                           ✅ Cumplido
                         </button>
                         <button
                           onClick={() => actualizarRetoEstado(r.id, "no_cumplido")}
-                          className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+                          className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm sm:text-base"
                         >
                           ❌ No cumplido
                         </button>
@@ -236,29 +248,29 @@ export default function SorteoBombos() {
       )}
 
       {/* Botones finales */}
-      <div className="flex gap-4 mt-10">
-        <button onClick={() => navigate("/")} className="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg">
+      <div className="flex flex-wrap justify-center gap-3 mt-10">
+        <button onClick={() => navigate("/")} className="bg-gray-700 hover:bg-gray-600 px-5 py-2 rounded-lg">
           Volver
         </button>
-        <button onClick={() => setModalPartidos(true)} className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg">
+        <button onClick={() => setModalPartidos(true)} className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg">
           ⚽ Partidos
         </button>
-        <button onClick={() => navigate("/tienda")} className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg">
+        <button onClick={() => navigate("/tienda")} className="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg">
           🛍️ Tienda
         </button>
-        <button onClick={() => setModalBeneficios(true)} className="bg-yellow-600 hover:bg-yellow-700 px-6 py-2 rounded-lg">
+        <button onClick={() => setModalBeneficios(true)} className="bg-yellow-600 hover:bg-yellow-700 px-5 py-2 rounded-lg">
           🎁 Beneficios
         </button>
-        <button onClick={reiniciarTorneo} className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg">
+        <button onClick={reiniciarTorneo} className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg">
           Reiniciar
         </button>
       </div>
 
-      {/* Modal sorteo de partidos y beneficios */}
+      {/* Modales */}
       <ModalPartidos visible={modalPartidos} onClose={() => setModalPartidos(false)} />
       <ModalBeneficios visible={modalBeneficios} onClose={() => setModalBeneficios(false)} />
 
-      {/* Modal animación esfera */}
+      {/* Animación esfera */}
       <AnimatePresence>
         {esferaVisible && resultadoActual && (
           <motion.div
@@ -270,26 +282,27 @@ export default function SorteoBombos() {
           >
             <motion.div
               onClick={(e) => e.stopPropagation()}
-              className="bg-gray-900 text-white rounded-2xl p-8 shadow-2xl flex flex-col items-center"
+              className="bg-gray-900 text-white rounded-2xl p-6 sm:p-8 shadow-2xl flex flex-col items-center max-w-md sm:max-w-lg w-full mx-4"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
               transition={{ type: "spring", stiffness: 120, damping: 10 }}
             >
               <motion.div
-                className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-4xl mb-4"
+                className="w-20 h-20 sm:w-24 sm:h-24 bg-blue-500 rounded-full flex items-center justify-center text-3xl sm:text-4xl mb-4"
                 animate={{ rotate: [0, 360], scale: [1, 1.2, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
               >
                 ⚽
               </motion.div>
-              <h2 className="text-2xl font-bold text-blue-400 mb-2">{resultadoActual.jugador}</h2>
-              <p className="text-lg mb-4">
-                obtuvo el equipo <span className="text-yellow-400 text-xl">{resultadoActual.equipo}</span> 🎉
+              <h2 className="text-xl sm:text-2xl font-bold text-blue-400 mb-2">{resultadoActual.jugador}</h2>
+              <p className="text-base sm:text-lg mb-4 text-center">
+                obtuvo el equipo{" "}
+                <span className="text-yellow-400 text-lg sm:text-xl">{resultadoActual.equipo}</span> 🎉
               </p>
               <button
                 onClick={() => setEsferaVisible(false)}
-                className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg"
+                className="bg-green-600 hover:bg-green-700 px-5 sm:px-6 py-2 rounded-lg"
               >
                 Continuar
               </button>

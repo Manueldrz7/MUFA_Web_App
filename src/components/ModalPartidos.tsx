@@ -56,7 +56,10 @@ export default function ModalPartidos({ visible, onClose }: Props) {
 
   const cerrarConRetos = () => {
     if (modo === "cpu" && jugadorActivo) {
-      const dificultadAleatoria = ["facil", "medio", "dificil"][Math.floor(Math.random() * 3)] as "facil" | "medio" | "dificil";
+      const dificultadAleatoria = ["facil", "medio", "dificil"][
+        Math.floor(Math.random() * 3)
+      ] as "facil" | "medio" | "dificil";
+
       const descripcion = RETOS_FC[dificultadAleatoria][
         Math.floor(Math.random() * RETOS_FC[dificultadAleatoria].length)
       ];
@@ -78,8 +81,12 @@ export default function ModalPartidos({ visible, onClose }: Props) {
     }
 
     if (modo === "jugador" && jugadorActivo && contrincante) {
-      const dif1 = ["facil", "medio", "dificil"][Math.floor(Math.random() * 3)] as "facil" | "medio" | "dificil";
-      const dif2 = ["facil", "medio", "dificil"][Math.floor(Math.random() * 3)] as "facil" | "medio" | "dificil";
+      const dif1 = ["facil", "medio", "dificil"][
+        Math.floor(Math.random() * 3)
+      ] as "facil" | "medio" | "dificil";
+      const dif2 = ["facil", "medio", "dificil"][
+        Math.floor(Math.random() * 3)
+      ] as "facil" | "medio" | "dificil";
 
       const reto1 =
         RETOS_FC[dif1][Math.floor(Math.random() * RETOS_FC[dif1].length)];
@@ -131,27 +138,28 @@ export default function ModalPartidos({ visible, onClose }: Props) {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose} // clic fuera cierra
+          onClick={onClose}
         >
           <motion.div
-            onClick={(e) => e.stopPropagation()} // clic dentro NO cierra
-            className="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl"
-            initial={{ scale: 0.8 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-gray-900 rounded-2xl p-5 sm:p-8 w-full max-w-xs sm:max-w-md text-white shadow-2xl"
+            initial={{ scale: 0.85 }}
             animate={{ scale: 1 }}
-            exit={{ scale: 0.8 }}
+            exit={{ scale: 0.85 }}
           >
-            <h2 className="text-2xl font-bold mb-4 text-center text-blue-400">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 text-center text-blue-400">
               ⚽ Nuevo Partido MUFA
             </h2>
 
-            <div className="flex justify-center gap-3 mb-5">
+            {/* Botones de modo */}
+            <div className="flex flex-col sm:flex-row justify-center gap-3 mb-5">
               <button
                 onClick={() => setModo("jugador")}
-                className={`px-5 py-2 rounded-lg font-semibold ${
+                className={`px-4 sm:px-5 py-2 rounded-lg font-semibold text-sm sm:text-base ${
                   modo === "jugador" ? "bg-green-600" : "bg-gray-700"
                 }`}
               >
@@ -159,7 +167,7 @@ export default function ModalPartidos({ visible, onClose }: Props) {
               </button>
               <button
                 onClick={() => setModo("cpu")}
-                className={`px-5 py-2 rounded-lg font-semibold ${
+                className={`px-4 sm:px-5 py-2 rounded-lg font-semibold text-sm sm:text-base ${
                   modo === "cpu" ? "bg-blue-600" : "bg-gray-700"
                 }`}
               >
@@ -167,12 +175,13 @@ export default function ModalPartidos({ visible, onClose }: Props) {
               </button>
             </div>
 
+            {/* Selects */}
             {modo && (
               <div className="space-y-3 mb-5">
                 <select
                   value={jugadorActivo}
                   onChange={(e) => setJugadorActivo(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-600 focus:border-blue-400 outline-none"
+                  className="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-600 focus:border-blue-400 outline-none text-sm sm:text-base"
                 >
                   <option value="">-- Jugador activo --</option>
                   {jugadores.map((j) => (
@@ -186,7 +195,7 @@ export default function ModalPartidos({ visible, onClose }: Props) {
                   <select
                     value={contrincante}
                     onChange={(e) => setContrincante(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-600 focus:border-blue-400 outline-none"
+                    className="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-600 focus:border-blue-400 outline-none text-sm sm:text-base"
                   >
                     <option value="">-- Contrincante --</option>
                     {jugadores
@@ -201,12 +210,13 @@ export default function ModalPartidos({ visible, onClose }: Props) {
               </div>
             )}
 
+            {/* Sorteo CPU */}
             {modo === "cpu" && (
               <div className="text-center mb-5">
                 <button
                   disabled={animando}
                   onClick={iniciarMiniSorteo}
-                  className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg font-semibold"
+                  className="bg-green-600 hover:bg-green-700 px-5 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base"
                 >
                   🎲 Mini Sorteo CPU
                 </button>
@@ -214,15 +224,16 @@ export default function ModalPartidos({ visible, onClose }: Props) {
             )}
 
             {resultado && (
-              <p className="text-center text-yellow-400 text-lg font-semibold">
+              <p className="text-center text-yellow-400 text-sm sm:text-lg font-semibold">
                 🎉 {resultado}
               </p>
             )}
 
-            <div className="flex justify-between mt-6">
+            {/* Botones finales */}
+            <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
               <button
                 onClick={cerrarConRetos}
-                className="bg-gray-700 hover:bg-gray-600 px-5 py-2 rounded-lg"
+                className="bg-gray-700 hover:bg-gray-600 px-5 py-2 rounded-lg text-sm sm:text-base"
               >
                 Cerrar
               </button>
@@ -230,7 +241,7 @@ export default function ModalPartidos({ visible, onClose }: Props) {
               {modo === "jugador" && (
                 <button
                   onClick={guardarPartidoJugador}
-                  className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg"
+                  className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg text-sm sm:text-base"
                 >
                   Guardar Partido
                 </button>

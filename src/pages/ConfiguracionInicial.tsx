@@ -35,64 +35,72 @@ export default function ConfiguracionInicial() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6">
-      <h1 className="text-4xl font-bold text-blue-400 mb-8 text-center">
+    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-4 sm:px-6 py-8">
+      <h1 className="text-3xl sm:text-4xl font-bold text-blue-400 mb-8 text-center">
         ⚽ Configuración del Torneo MUFA
       </h1>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      {/* 🧍 Formulario de jugadores */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 w-full max-w-md">
         <input
           type="text"
           placeholder="Nombre del jugador"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          className="px-4 py-2 rounded-md text-white focus:outline-none"
+          className="px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white focus:border-blue-400 focus:outline-none flex-1"
         />
         <button
           onClick={handleAgregar}
-          className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-md transition"
+          className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-md font-semibold transition"
         >
           Agregar jugador
         </button>
       </div>
 
-      <div className="mb-6 flex items-center gap-3">
+      {/* ⚙️ Configuración de equipos */}
+      <div className="mb-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
         <label className="text-lg font-semibold">Equipos por jugador:</label>
         <input
           type="number"
           min={1}
           value={equiposPorJugador}
           onChange={(e) => setEquiposPorJugador(Number(e.target.value))}
-          className="w-20 text-center text-white rounded-md py-1"
+          className="w-24 text-center bg-gray-800 text-white rounded-md py-1 border border-gray-700 focus:border-blue-400 focus:outline-none"
         />
       </div>
 
-      <ul className="w-full max-w-md bg-gray-800 rounded-lg p-4 space-y-2">
+      {/* 📋 Lista de jugadores */}
+      <div className="w-full max-w-md bg-gray-800 rounded-lg p-4 space-y-2 shadow-lg">
         {jugadores.length === 0 ? (
           <p className="text-gray-400 text-center">Aún no hay jugadores 😅</p>
         ) : (
-          jugadores.map((j) => (
-            <li
-              key={j.id}
-              className="flex justify-between items-center bg-gray-900 px-4 py-2 rounded-md"
-            >
-              <span>{j.nombre}</span>
-              <span className="text-yellow-400">{j.monedas} 🪙</span>
-            </li>
-          ))
+          <ul className="divide-y divide-gray-700">
+            {jugadores.map((j) => (
+              <li
+                key={j.nombre}
+                className="flex justify-between items-center py-2 px-2 sm:px-4 bg-gray-900 rounded-md"
+              >
+                <span className="text-sm sm:text-base">{j.nombre}</span>
+                <span className="text-yellow-400 text-sm sm:text-base">
+                  {j.monedas} 🪙
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
-      </ul>
+      </div>
 
-      <div className="mt-8 flex gap-4">
+      {/* 🔘 Botones de acción */}
+      <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center w-full max-w-md">
         <button
           onClick={limpiarJugadores}
-          className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-md transition"
+          className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-md font-semibold transition text-sm sm:text-base"
         >
           Reiniciar jugadores
         </button>
         <button
           onClick={handleIniciar}
-          className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-md transition"
+          className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-md font-semibold transition text-sm sm:text-base"
         >
           Iniciar torneo
         </button>

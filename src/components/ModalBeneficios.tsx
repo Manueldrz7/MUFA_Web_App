@@ -15,30 +15,35 @@ export default function ModalBeneficios({ visible, onClose }: Props) {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-gray-900 rounded-2xl p-8 text-white shadow-2xl w-full max-w-3xl"
-            initial={{ scale: 0.8 }}
+            className="bg-gray-900 rounded-2xl p-5 sm:p-8 text-white shadow-2xl w-full max-w-3xl overflow-hidden"
+            initial={{ scale: 0.85 }}
             animate={{ scale: 1 }}
-            exit={{ scale: 0.8 }}
+            exit={{ scale: 0.85 }}
           >
-            <h2 className="text-3xl font-bold text-yellow-400 text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-yellow-400 text-center mb-6">
               🎁 Beneficios comprados
             </h2>
 
             {jugadores.length === 0 ? (
-              <p className="text-gray-400 text-center">No hay jugadores registrados.</p>
+              <p className="text-gray-400 text-center text-sm sm:text-base">
+                No hay jugadores registrados.
+              </p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-center border-collapse">
+                <table className="w-full text-center border-collapse min-w-[600px]">
                   <thead>
                     <tr>
                       {jugadores.map((j) => (
-                        <th key={j.nombre} className="border-b border-gray-600 py-2 px-4">
+                        <th
+                          key={j.nombre}
+                          className="border-b border-gray-600 py-2 px-3 sm:px-4 text-sm sm:text-base"
+                        >
                           {j.nombre}
                         </th>
                       ))}
@@ -56,14 +61,16 @@ export default function ModalBeneficios({ visible, onClose }: Props) {
                               {j.beneficios.map((b, idx) => (
                                 <li
                                   key={idx}
-                                  className="bg-gray-800 px-3 py-1 rounded-md text-sm"
+                                  className="bg-gray-800 px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm"
                                 >
                                   {b}
                                 </li>
                               ))}
                             </ul>
                           ) : (
-                            <span className="text-gray-500 text-sm">Sin beneficios</span>
+                            <span className="text-gray-500 text-xs sm:text-sm">
+                              Sin beneficios
+                            </span>
                           )}
                         </td>
                       ))}
@@ -76,7 +83,7 @@ export default function ModalBeneficios({ visible, onClose }: Props) {
             <div className="text-center mt-6">
               <button
                 onClick={onClose}
-                className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-semibold"
+                className="bg-red-600 hover:bg-red-700 px-5 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base"
               >
                 Cerrar
               </button>
