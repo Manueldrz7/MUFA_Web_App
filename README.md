@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -71,3 +72,7 @@ export default defineConfig([
   },
 ])
 ```
+=======
+# MUFA_Web_App
+Aplicación que simula el sorteo de la champions league 
+>>>>>>> b571891bbc0540345f6b32a0495331736d5ebe57
