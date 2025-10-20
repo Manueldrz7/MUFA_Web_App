@@ -4,7 +4,43 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 
-// ✅ Beneficios por nivel (tipado correcto)
+/**
+ * Retorna la descripción detallada de un beneficio según su nombre.
+ * Las descripciones deben ser idénticas a las definidas en el store global.
+ */
+function obtenerDescripcionBeneficio(nombre: string): string {
+  const descripciones: Record<string, string> = {
+    "Repetir tu sorteo de reto": "Permite volver a sortear el reto actual una vez.",
+    "Cambiar de bombo una vez": "Puedes cambiar el bombo asignado una sola vez.",
+    "Elegir dificultad del siguiente reto": "Decide si el próximo reto será fácil, medio o difícil.",
+    "Duplicar las monedas de tu siguiente reto fácil": "Tu siguiente reto fácil otorgará el doble de monedas.",
+    "Repetir tu sorteo de equipo": "Te permite volver a sortear el equipo una vez.",
+    "Ver los próximos 3 retos posibles antes del sorteo": "Muestra una vista previa de los siguientes retos.",
+    "Intercambiar tu equipo con otro jugador (si acepta)": "Permite ofrecer un intercambio de equipos con otro jugador.",
+    "Elegir tu rival en la próxima ronda": "Selecciona contra quién jugarás en la siguiente ronda.",
+    "Saltar tu siguiente reto": "Evita recibir reto en la próxima ronda.",
+    "Duplicar las monedas del siguiente reto cumplido (de cualquier nivel)":
+      "Multiplica por 2 las monedas de tu siguiente reto cumplido.",
+    "Bloquear un reto difícil para todos durante 1 ronda":
+      "Impide que se asignen retos difíciles a todos durante una ronda.",
+    "Control total del sorteo personal": "Te permite elegir tu equipo en el sorteo personal.",
+    "Modificar el orden del sorteo general": "Define el orden de los jugadores en el siguiente sorteo.",
+    "Pase Dorado": "Saltas tu reto y aún así obtienes las monedas.",
+    "Robar un reto fácil de otro jugador": "Toma un reto fácil de otro jugador y deja uno aleatorio.",
+    "Multiplicador de 2× para 2 rondas seguidas":
+      "Durante 2 rondas, todos tus retos cumplidos otorgan el doble de monedas.",
+    "Bloquear un jugador del siguiente sorteo":
+      "Evita que un jugador participe en el siguiente sorteo de retos.",
+    "Reiniciar tu sorteo completo de equipo": "Vuelve a realizar todo tu sorteo de equipos.",
+    "Bono de +5 Mufa Coins instantáneo": "Obtienes 5 Mufa Coins adicionales de forma inmediata.",
+  };
+  return descripciones[nombre] || "Beneficio sin descripción.";
+}
+
+/**
+ * Define la lista de beneficios disponibles por nivel de dificultad.
+ * Cada nivel contiene beneficios de distinta potencia y costo.
+ */
 const beneficios: Record<number, string[]> = {
   1: [
     "Repetir tu sorteo de reto",
@@ -32,9 +68,16 @@ const beneficios: Record<number, string[]> = {
   ],
 };
 
-// ✅ Precios tipados correctamente
+/**
+ * Define el costo de los beneficios por nivel en Mufa Coins.
+ */
 const precios: Record<number, number> = { 1: 5, 2: 10, 3: 15 };
 
+/**
+ * Componente principal de la Tienda MUFA.
+ * Permite a los jugadores comprar beneficios con Mufa Coins,
+ * tanto de forma directa (por nivel) como aleatoria.
+ */
 export default function TiendaMUFA() {
   const { jugadores, setJugadores } = useMufaStore();
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState("");
@@ -46,44 +89,87 @@ export default function TiendaMUFA() {
   const [mensaje, setMensaje] = useState("");
   const navigate = useNavigate();
 
+  /**
+   * Confirma la compra de un beneficio específico según nivel.
+   * Verifica el saldo del jugador y descuenta las Mufa Coins correspondientes.
+   * Agrega el beneficio al inventario del jugador como objeto completo.
+   */
   const confirmarCompra = () => {
-    if (!jugadorSeleccionado || !beneficioSeleccionado || !nivelSeleccionado) return;
+    console.log("Intentando confirmar compra...");
+
+    if (!jugadorSeleccionado) {
+      alert("Selecciona un jugador antes de comprar un beneficio.");
+      return;
+    }
+
+    if (!beneficioSeleccionado || !nivelSeleccionado) {
+      alert("Ocurrió un error con la selección del beneficio.");
+      return;
+    }
 
     const jugador = jugadores.find((j) => j.nombre === jugadorSeleccionado);
-    if (!jugador) return;
+    if (!jugador) {
+      alert("Jugador no encontrado.");
+      return;
+    }
 
     const costo = precios[nivelSeleccionado];
+    console.log("Costo:", costo, "Jugador:", jugador);
+
     if (jugador.monedas < costo) {
       alert("No tienes suficientes Mufa Coins para este beneficio.");
       setMostrarConfirmacion(false);
       return;
     }
 
+    // Si es el beneficio especial de +5 monedas, aplicar efecto inmediato
+    if (beneficioSeleccionado === "Bono de +5 Mufa Coins instantáneo") {
+      const nuevosJugadores = jugadores.map((j) =>
+        j.nombre === jugador.nombre
+          ? { ...j, monedas: j.monedas + 5 }
+          : j
+      );
+
+      setJugadores(nuevosJugadores);
+      setMostrarConfirmacion(false);
+      setMostrarResultado(true);
+      setBeneficioObtenido(beneficioSeleccionado);
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.7 } });
+      setMensaje(`${jugador.nombre} obtuvo +5 Mufa Coins`);
+      return;
+    }
+
+    // Crea el nuevo beneficio como objeto completo
+    const nuevoBeneficio = {
+      nombre: beneficioSeleccionado,
+      descripcion: obtenerDescripcionBeneficio(beneficioSeleccionado),
+      usado: false,
+    };
+
+    // Actualiza el jugador correspondiente
     const nuevosJugadores = jugadores.map((j) =>
       j.nombre === jugador.nombre
         ? {
             ...j,
             monedas: j.monedas - costo,
-            beneficios: [...(j.beneficios || []), beneficioSeleccionado],
+            beneficios: [...(j.beneficios ?? []), nuevoBeneficio],
           }
         : j
     );
 
+    // Aplica cambios y muestra resultado
     setJugadores(nuevosJugadores);
     setMostrarConfirmacion(false);
     setBeneficioObtenido(beneficioSeleccionado);
     setMostrarResultado(true);
-
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.7 } });
-    setMensaje(`🎁 ${jugador.nombre} compró "${beneficioSeleccionado}"`);
+    setMensaje(`${jugador.nombre} compró "${beneficioSeleccionado}"`);
   };
 
-  const abrirModalCompra = (nivel: number, beneficio: string) => {
-    setNivelSeleccionado(nivel);
-    setBeneficioSeleccionado(beneficio);
-    setMostrarConfirmacion(true);
-  };
-
+  /**
+   * Permite realizar una compra aleatoria con costo fijo de 2 Mufa Coins.
+   * El beneficio obtenido depende de una probabilidad ponderada por nivel.
+   */
   const comprarAleatorio = () => {
     if (!jugadorSeleccionado) return alert("Selecciona un jugador primero.");
     const jugador = jugadores.find((j) => j.nombre === jugadorSeleccionado);
@@ -100,12 +186,18 @@ export default function TiendaMUFA() {
     const lista = beneficios[nivelElegido];
     const beneficioAleatorio = lista[Math.floor(Math.random() * lista.length)];
 
+    const nuevoBeneficio = {
+      nombre: beneficioAleatorio,
+      descripcion: obtenerDescripcionBeneficio(beneficioAleatorio),
+      usado: false,
+    };
+
     const nuevosJugadores = jugadores.map((j) =>
       j.nombre === jugador.nombre
         ? {
             ...j,
             monedas: j.monedas - 2,
-            beneficios: [...(j.beneficios || []), beneficioAleatorio],
+            beneficios: [...(j.beneficios ?? []), nuevoBeneficio],
           }
         : j
     );
@@ -116,16 +208,32 @@ export default function TiendaMUFA() {
     confetti({ particleCount: 100, spread: 80, origin: { y: 0.7 } });
 
     setMensaje(
-      `🎰 ${jugador.nombre} obtuvo "${beneficioAleatorio}" (Nivel ${nivelElegido})`
+      `${jugador.nombre} obtuvo "${beneficioAleatorio}" (Nivel ${nivelElegido})`
     );
   };
 
+  /**
+   * Abre la ventana modal de confirmación de compra.
+   * Recibe el nivel y el beneficio seleccionados.
+   */
+  const abrirModalCompra = (nivel: number, beneficio: string) => {
+  setNivelSeleccionado(nivel);
+  setBeneficioSeleccionado(beneficio);
+  setTimeout(() => setMostrarConfirmacion(true), 0); 
+};
+
+  /**
+   * Render principal del componente TiendaMUFA.
+   * Incluye la selección de jugador, lista de beneficios por nivel,
+   * y los modales de confirmación y resultado de compra.
+   */
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 to-blue-950 text-white px-4 sm:px-6 py-8 flex flex-col items-center">
       <h1 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-6 text-center">
-        🏪 Tienda MUFA
+        Tienda MUFA
       </h1>
 
+      {/* Selector de jugador activo */}
       <div className="mb-6 w-full max-w-md">
         <label className="block text-base sm:text-lg mb-2 text-center">
           Selecciona jugador:
@@ -138,7 +246,7 @@ export default function TiendaMUFA() {
           <option value="">-- Elegir jugador --</option>
           {jugadores.map((j) => (
             <option key={j.nombre} value={j.nombre}>
-              {j.nombre} ({j.monedas} 🪙)
+              {j.nombre} ({j.monedas} Mufa Coins)
             </option>
           ))}
         </select>
@@ -150,16 +258,16 @@ export default function TiendaMUFA() {
         </p>
       )}
 
-      {/* 🎲 Ruleta única */}
+      {/* Botón de compra aleatoria */}
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={comprarAleatorio}
         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-5 sm:px-6 py-3 rounded-xl font-bold text-base sm:text-lg shadow-lg mb-10 text-center"
       >
-        🎰 Usar Aleatorio (2 Mufa Coins)
+        Usar Aleatorio (2 Mufa Coins)
       </motion.button>
 
-      {/* 🛍️ Lista de beneficios */}
+      {/* Listado de beneficios disponibles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl px-2">
         {[1, 2, 3].map((nivel) => (
           <motion.div
@@ -212,7 +320,7 @@ export default function TiendaMUFA() {
         </button>
       </div>
 
-      {/* 🪙 Modal Confirmación */}
+      {/* Modal de confirmación de compra */}
       <AnimatePresence>
         {mostrarConfirmacion && (
           <motion.div
@@ -231,6 +339,10 @@ export default function TiendaMUFA() {
                 ¿Deseas comprar este beneficio?
               </h2>
               <p className="mb-6 text-sm sm:text-lg">{beneficioSeleccionado}</p>
+              <p className="text-gray-400 mb-6 text-sm">
+                {beneficioSeleccionado &&
+                  obtenerDescripcionBeneficio(beneficioSeleccionado)}
+              </p>
               <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
                 <button
                   onClick={() => setMostrarConfirmacion(false)}
@@ -250,7 +362,7 @@ export default function TiendaMUFA() {
         )}
       </AnimatePresence>
 
-      {/* 🎉 Modal Resultado */}
+      {/* Modal de resultado de compra */}
       <AnimatePresence>
         {mostrarResultado && (
           <motion.div
@@ -266,7 +378,7 @@ export default function TiendaMUFA() {
               exit={{ scale: 0.8 }}
             >
               <h2 className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-4">
-                🎁 Beneficio obtenido
+                Beneficio obtenido
               </h2>
               <p className="text-base sm:text-xl mb-6">{beneficioObtenido}</p>
               <button

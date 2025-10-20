@@ -6,11 +6,15 @@ import confetti from "canvas-confetti";
 import ModalPartidos from "../components/ModalPartidos";
 import ModalBeneficios from "../components/ModalBeneficios";
 
+/**
+ * Componente principal del sorteo MUFA.
+ * Controla la asignación de equipos, visualización de retos, partidas y beneficios.
+ */
 export default function SorteoBombos() {
   const {
     jugadores,
     torneo,
-    reiniciarTorneo,
+    terminarTorneo,
     bombos,
     resultados,
     retos,
@@ -21,17 +25,21 @@ export default function SorteoBombos() {
 
   const [activo, setActivo] = useState(0);
   const [mensaje, setMensaje] = useState("");
-  const [esferaVisible, setEsferaVisible] = useState(false);
-  const [resultadoActual, setResultadoActual] = useState<{ jugador: string; equipo: string } | null>(null);
   const [sorteoFinalizado, setSorteoFinalizado] = useState(false);
-
-  // Modales
   const [modalPartidos, setModalPartidos] = useState(false);
   const [modalBeneficios, setModalBeneficios] = useState(false);
+  const [confirmarTerminar, setConfirmarTerminar] = useState(false);
+  const [modalExito, setModalExito] = useState(false);
+
+  // Nuevo estado para la modal del sorteo
+  const [modalSorteo, setModalSorteo] = useState(false);
+  const [equipoSorteado, setEquipoSorteado] = useState<string | null>(null);
+  const [jugadorSorteo, setJugadorSorteo] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
-  // ✅ Inicializar bombos
+  // ──────────────────────────────────────────────────────────────
+  // Inicializa los bombos si aún no existen
   useEffect(() => {
     if (!torneo) return;
     if (Object.keys(bombos).length === 0) {
@@ -42,9 +50,10 @@ export default function SorteoBombos() {
       });
       setBombos(nuevosBombos);
     }
-  }, [torneo]);
+  }, [torneo, bombos, setBombos]);
 
-  // ✅ Detectar sorteo completado
+  // ──────────────────────────────────────────────────────────────
+  // Detecta si todos los jugadores ya tienen equipos asignados
   useEffect(() => {
     if (!torneo) return;
     const jugadoresCompletos = jugadores.every((j) => {
@@ -53,66 +62,89 @@ export default function SorteoBombos() {
     });
     if (jugadoresCompletos && jugadores.length > 0) {
       setSorteoFinalizado(true);
-      setMensaje("🎊 ¡Todos los jugadores tienen sus equipos!");
+      setMensaje("Todos los jugadores tienen sus equipos.");
     }
   }, [resultados, torneo, jugadores]);
 
-  // ✳️ Sortear equipos
+  // ──────────────────────────────────────────────────────────────
+  // Sortea un equipo aleatorio de los bombos para el jugador actual
   const sortear = () => {
-    if (!torneo) return setMensaje("⚠️ No hay torneo configurado.");
+    if (!torneo) return setMensaje("No hay torneo configurado.");
 
     const jugador = jugadores[activo];
     if (!jugador) return;
 
+    // Si el jugador tiene activo el beneficio de repetir sorteo
+    if (jugador.puedeRepetirEquipo) {
+      setMensaje(`${jugador.nombre} puede repetir su sorteo si no le gusta el equipo.`);
+      useMufaStore.setState({
+        jugadores: jugadores.map((j) =>
+          j.nombre === jugador.nombre ? { ...j, puedeRepetirEquipo: false } : j
+        ),
+      });
+    }
+
     const equiposJugador = resultados[jugador.nombre] || [];
     if (equiposJugador.length >= torneo.equiposPorJugador) {
       setActivo((prev) => (prev + 1 < jugadores.length ? prev + 1 : 0));
-      setMensaje(`✅ ${jugador.nombre} ya completó sus equipos.`);
+      setMensaje(`${jugador.nombre} ya completó sus equipos.`);
       return;
     }
 
     const letrasDisponibles = Object.keys(bombos).filter((b) => bombos[b].length > 0);
     if (letrasDisponibles.length === 0) {
-      setMensaje("🎉 ¡Sorteo completado!");
+      setMensaje("Sorteo completado.");
       setSorteoFinalizado(true);
       return;
     }
 
-    const bomboAleatorio =
-      letrasDisponibles[Math.floor(Math.random() * letrasDisponibles.length)];
+    const bomboAleatorio = letrasDisponibles[Math.floor(Math.random() * letrasDisponibles.length)];
     const equiposDisponibles = bombos[bomboAleatorio];
-    const equipoAleatorio =
-      equiposDisponibles[Math.floor(Math.random() * equiposDisponibles.length)];
+    const equipoAleatorio = equiposDisponibles[Math.floor(Math.random() * equiposDisponibles.length)];
 
-    setEsferaVisible(true);
-    setResultadoActual({ jugador: jugador.nombre, equipo: equipoAleatorio });
+    // Efecto visual
+    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
 
-    confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+    // Mostrar modal con el resultado antes de avanzar
+    setEquipoSorteado(equipoAleatorio);
+    setJugadorSorteo(jugador.nombre);
+    setModalSorteo(true);
 
+    // Guardar el resultado en el estado global
+    setResultados({
+      ...resultados,
+      [jugador.nombre]: [...(resultados[jugador.nombre] || []), equipoAleatorio],
+    });
+
+    setBombos({
+      ...bombos,
+      [bomboAleatorio]: bombos[bomboAleatorio].filter((e) => e !== equipoAleatorio),
+    });
+  };
+
+  // ──────────────────────────────────────────────────────────────
+  // Finaliza el torneo con confirmación y mensaje de éxito
+  const handleTerminarTorneo = () => {
+    setConfirmarTerminar(false);
+    terminarTorneo();
+    setModalExito(true);
     setTimeout(() => {
-      setResultados({
-        ...resultados,
-        [jugador.nombre]: [...(resultados[jugador.nombre] || []), equipoAleatorio],
-      });
-
-      setBombos({
-        ...bombos,
-        [bomboAleatorio]: bombos[bomboAleatorio].filter((e) => e !== equipoAleatorio),
-      });
-
-      setActivo((prev) => (prev + 1 < jugadores.length ? prev + 1 : 0));
+      setModalExito(false);
+      navigate("/configuracion");
     }, 2000);
   };
 
+  // ──────────────────────────────────────────────────────────────
+  // Render principal
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 to-blue-950 text-white px-4 sm:px-6 py-6 flex flex-col items-center">
       <h1 className="text-3xl sm:text-4xl font-bold text-blue-400 mb-6 text-center">
-        🏆 Sorteo MUFA
+        Sorteo MUFA
       </h1>
 
       {mensaje && <p className="mb-4 text-yellow-400 text-center px-2">{mensaje}</p>}
 
-      {/* Bombos visibles hasta que finalice el sorteo */}
+      {/* ─────────── Bombos visibles mientras el sorteo no finaliza ─────────── */}
       {!sorteoFinalizado && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10 w-full max-w-6xl">
@@ -151,10 +183,10 @@ export default function SorteoBombos() {
         </>
       )}
 
-      {/* 📋 Pizarra de Equipos */}
+      {/* ─────────── Tabla de equipos sorteados ─────────── */}
       <div className="w-full max-w-3xl bg-gray-800 rounded-lg p-4 mt-6 overflow-x-auto">
         <h3 className="text-xl sm:text-2xl mb-4 text-center font-semibold">
-          📋 Equipos Sorteados
+          Equipos Sorteados
         </h3>
         <table className="w-full text-center border-collapse min-w-[500px]">
           <thead>
@@ -193,119 +225,284 @@ export default function SorteoBombos() {
         </table>
       </div>
 
-      {/* 🎯 Grid de Retos (solo si hay) */}
+      {/* ─────────── Tabla de retos actuales ─────────── */}
       {retos.length > 0 && (
         <div className="w-full max-w-3xl bg-gray-800 rounded-lg p-4 mt-10 overflow-x-auto">
           <h3 className="text-xl sm:text-2xl mb-4 text-center font-semibold">
-            🎯 Retos Actuales
+            Retos Actuales
           </h3>
-          <table className="w-full text-center border-collapse min-w-[600px]">
-            <thead>
-              <tr>
-                <th className="border-b border-gray-600 py-2">Jugador</th>
-                <th className="border-b border-gray-600 py-2">Reto</th>
-                <th className="border-b border-gray-600 py-2">Dificultad</th>
-                <th className="border-b border-gray-600 py-2">Estado</th>
-                <th className="border-b border-gray-600 py-2">Monedas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {retos.map((r) => (
-                <tr key={r.id}>
-                  <td className="py-2 border-b border-gray-700">{r.jugador}</td>
-                  <td className="py-2 border-b border-gray-700">{r.descripcion}</td>
-                  <td className="py-2 border-b border-gray-700 capitalize">{r.dificultad}</td>
-                  <td className="py-2 border-b border-gray-700">
-                    {r.cumplido ? (
-                      <span className="text-green-400 font-semibold">Cumplido</span>
-                    ) : r.fallido ? (
-                      <span className="text-red-400 font-semibold">No cumplido</span>
-                    ) : (
-                      <div className="flex flex-wrap justify-center gap-2">
-                        <button
-                          onClick={() => actualizarRetoEstado(r.id, "cumplido")}
-                          className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm sm:text-base"
-                        >
-                          ✅ Cumplido
-                        </button>
-                        <button
-                          onClick={() => actualizarRetoEstado(r.id, "no_cumplido")}
-                          className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm sm:text-base"
-                        >
-                          ❌ No cumplido
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-2 border-b border-gray-700 text-yellow-400 font-semibold">
-                    {r.monedas}
-                  </td>
+
+          <div
+            className="max-h-96 overflow-y-auto custom-scrollbar"
+            style={{ scrollbarWidth: "thin", scrollbarColor: "#4b5563 #1f2937" }}
+          >
+            <table className="w-full text-center border-collapse min-w-[600px]">
+              <thead>
+                <tr>
+                  <th className="border-b border-gray-600 py-2">Jugador</th>
+                  <th className="border-b border-gray-600 py-2">Reto</th>
+                  <th className="border-b border-gray-600 py-2">Dificultad</th>
+                  <th className="border-b border-gray-600 py-2">Estado</th>
+                  <th className="border-b border-gray-600 py-2">Monedas</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {retos.map((r) => {
+                  const jugador = jugadores.find((j) => j.nombre === r.jugador);
+
+                  return (
+                    <tr key={r.id}>
+                      {/* 🧩 Columna de jugador con beneficios activos */}
+                      <td className="py-2 border-b border-gray-700">
+                        <div className="flex flex-col items-center">
+                          <span className="font-semibold text-blue-300">{r.jugador}</span>
+
+                          {/* 🎯 Animación de beneficios activos */}
+                          <AnimatePresence>
+                            {jugador && (
+                              <motion.div
+                                className="flex flex-wrap justify-center gap-1 mt-1"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                              >
+                                {jugador.multiplicadorFacil && (
+                                  <motion.span
+                                    key="multiplicadorFacil"
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-yellow-400 text-black px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                  >
+                                    ⚡ Doble monedas (reto fácil)
+                                  </motion.span>
+                                )}
+
+                                {jugador.multiplicadorActivo && (
+                                  <motion.span
+                                    key="multiplicadorActivo"
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-yellow-300 text-black px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                  >
+                                    💰 Doble monedas (siguiente reto)
+                                  </motion.span>
+                                )}
+
+                                {jugador.paseDoradoActivo && (
+                                  <motion.span
+                                    key="paseDoradoActivo"
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-amber-400 text-black px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                  >
+                                    🏆 Pase Dorado
+                                  </motion.span>
+                                )}
+
+                                {jugador.saltarSiguienteReto && (
+                                  <motion.span
+                                    key="saltarSiguienteReto"
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-blue-400 text-black px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                  >
+                                    ⏭ Saltar siguiente reto
+                                  </motion.span>
+                                )}
+
+                                {jugador.bloquearRetosDificiles && (
+                                  <motion.span
+                                    key="bloquearRetosDificiles"
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-red-400 text-black px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                  >
+                                    🚫 Bloquear reto difícil
+                                  </motion.span>
+                                )}
+
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </td>
+
+                      {/* Descripción del reto */}
+                      <td className="py-2 border-b border-gray-700">{r.descripcion}</td>
+
+                      {/* Dificultad */}
+                      <td className="py-2 border-b border-gray-700 capitalize">
+                        {r.dificultad}
+                      </td>
+
+                      {/* Estado */}
+                      <td className="py-2 border-b border-gray-700">
+                        {r.cumplido ? (
+                          <span className="text-green-400 font-semibold">Cumplido</span>
+                        ) : r.fallido ? (
+                          <span className="text-red-400 font-semibold">No cumplido</span>
+                        ) : (
+                          <div className="flex flex-wrap justify-center gap-2">
+                            <button
+                              onClick={() => actualizarRetoEstado(r.id, "cumplido")}
+                              className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm sm:text-base"
+                            >
+                              Cumplido
+                            </button>
+                            <button
+                              onClick={() => actualizarRetoEstado(r.id, "no_cumplido")}
+                              className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm sm:text-base"
+                            >
+                              No cumplido
+                            </button>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Monedas */}
+                      <td className="py-2 border-b border-gray-700 text-yellow-400 font-semibold">
+                        {r.monedas}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* Botones finales */}
+
+      {/* ─────────── Botones finales ─────────── */}
       <div className="flex flex-wrap justify-center gap-3 mt-10">
         <button onClick={() => navigate("/")} className="bg-gray-700 hover:bg-gray-600 px-5 py-2 rounded-lg">
           Volver
         </button>
         <button onClick={() => setModalPartidos(true)} className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg">
-          ⚽ Partidos
+          Partidos
         </button>
         <button onClick={() => navigate("/tienda")} className="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg">
-          🛍️ Tienda
+          Tienda
         </button>
         <button onClick={() => setModalBeneficios(true)} className="bg-yellow-600 hover:bg-yellow-700 px-5 py-2 rounded-lg">
-          🎁 Beneficios
+          Beneficios
         </button>
-        <button onClick={reiniciarTorneo} className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg">
-          Reiniciar
+        <button onClick={() => setConfirmarTerminar(true)} className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg">
+          Terminar Torneo
         </button>
       </div>
 
-      {/* Modales */}
+      {/* ─────────── Modales ─────────── */}
       <ModalPartidos visible={modalPartidos} onClose={() => setModalPartidos(false)} />
       <ModalBeneficios visible={modalBeneficios} onClose={() => setModalBeneficios(false)} />
 
-      {/* Animación esfera */}
+      {/* Modal del sorteo */}
       <AnimatePresence>
-        {esferaVisible && resultadoActual && (
+        {modalSorteo && (
           <motion.div
             className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setEsferaVisible(false)}
           >
             <motion.div
-              onClick={(e) => e.stopPropagation()}
-              className="bg-gray-900 text-white rounded-2xl p-6 sm:p-8 shadow-2xl flex flex-col items-center max-w-md sm:max-w-lg w-full mx-4"
-              initial={{ scale: 0 }}
+              className="bg-gray-900 rounded-2xl p-6 sm:p-8 text-white shadow-2xl w-full max-w-xs sm:max-w-md text-center mx-4"
+              initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              transition={{ type: "spring", stiffness: 120, damping: 10 }}
+              exit={{ scale: 0.8 }}
             >
-              <motion.div
-                className="w-20 h-20 sm:w-24 sm:h-24 bg-blue-500 rounded-full flex items-center justify-center text-3xl sm:text-4xl mb-4"
-                animate={{ rotate: [0, 360], scale: [1, 1.2, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
-              >
-                ⚽
-              </motion.div>
-              <h2 className="text-xl sm:text-2xl font-bold text-blue-400 mb-2">{resultadoActual.jugador}</h2>
-              <p className="text-base sm:text-lg mb-4 text-center">
-                obtuvo el equipo{" "}
-                <span className="text-yellow-400 text-lg sm:text-xl">{resultadoActual.equipo}</span> 🎉
+              <h2 className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-3">
+                ¡Equipo Sorteado!
+              </h2>
+              <p className="text-lg sm:text-xl mb-2">
+                <span className="text-blue-400 font-semibold">{jugadorSorteo}</span> obtuvo:
+              </p>
+              <p className="text-3xl sm:text-4xl text-green-400 font-extrabold mb-6">
+                {equipoSorteado}
               </p>
               <button
-                onClick={() => setEsferaVisible(false)}
-                className="bg-green-600 hover:bg-green-700 px-5 sm:px-6 py-2 rounded-lg"
+                onClick={() => {
+                  setModalSorteo(false);
+                  setActivo((prev) => (prev + 1 < jugadores.length ? prev + 1 : 0));
+                }}
+                className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg text-lg font-semibold"
               >
                 Continuar
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de confirmación */}
+      <AnimatePresence>
+        {confirmarTerminar && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white text-gray-900 rounded-2xl p-6 w-80 text-center shadow-2xl"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+            >
+              <h3 className="text-xl font-bold mb-4">¿Terminar torneo?</h3>
+              <p className="text-gray-600 mb-6 text-sm">
+                Los jugadores y beneficios se conservarán.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={handleTerminarTorneo}
+                  className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg text-white font-semibold"
+                >
+                  Sí
+                </button>
+                <button
+                  onClick={() => setConfirmarTerminar(false)}
+                  className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg text-white font-semibold"
+                >
+                  No
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de éxito */}
+      <AnimatePresence>
+        {modalExito && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white text-gray-900 rounded-2xl p-6 w-80 text-center shadow-2xl"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+            >
+              <h3 className="text-xl font-bold mb-2 text-green-700">
+                ¡Torneo finalizado!
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Redirigiendo a configuración...
+              </p>
             </motion.div>
           </motion.div>
         )}

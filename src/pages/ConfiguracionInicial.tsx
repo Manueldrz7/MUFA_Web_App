@@ -40,7 +40,7 @@ export default function ConfiguracionInicial() {
         ⚽ Configuración del Torneo MUFA
       </h1>
 
-      {/* 🧍 Formulario de jugadores */}
+      {/*Formulario de jugadores */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6 w-full max-w-md">
         <input
           type="text"
@@ -57,7 +57,7 @@ export default function ConfiguracionInicial() {
         </button>
       </div>
 
-      {/* ⚙️ Configuración de equipos */}
+      {/*Configuración de equipos */}
       <div className="mb-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
         <label className="text-lg font-semibold">Equipos por jugador:</label>
         <input
@@ -69,7 +69,7 @@ export default function ConfiguracionInicial() {
         />
       </div>
 
-      {/* 📋 Lista de jugadores */}
+      {/*Lista de jugadores */}
       <div className="w-full max-w-md bg-gray-800 rounded-lg p-4 space-y-2 shadow-lg">
         {jugadores.length === 0 ? (
           <p className="text-gray-400 text-center">Aún no hay jugadores 😅</p>
@@ -90,7 +90,7 @@ export default function ConfiguracionInicial() {
         )}
       </div>
 
-      {/* 🔘 Botones de acción */}
+      {/*Botones de acción */}
       <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center w-full max-w-md">
         <button
           onClick={limpiarJugadores}
