@@ -18,7 +18,7 @@ export const RETOS_FC = {
     "LA GRAN CHILAVERT. Marca un gol con tu portero",
     "CABECEALA BORGUETTI. Anota dos goles de cabeza ~chupas~",
     "EL BASADO. Anota dos goles en el primer tiempo",
-    "PARA QUE TE TRAJE?. Gana sin que los delanteros metan gol,
+    "PARA QUE TE TRAJE?. Gana sin que los delanteros metan gol",
   ],
   dificil: [
     "PAPEADO. Gana 4-0 o más",
