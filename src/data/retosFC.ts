@@ -27,5 +27,6 @@ export const RETOS_FC = {
     "MADRE MIA EL BICHO. Anota un gol de chilena",
     "EL PRECOZ DEL GOL. Anota una manita (5 goles) con un jugador",
     "LA ARGENTINA DE LIO. Anota un gol con al menos 25 toques de bocha",
+    //"Gana con un equipo de 4 estrellas o menos",
   ],
 };
